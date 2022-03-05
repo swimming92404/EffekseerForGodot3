@@ -12,6 +12,7 @@ jobs:
         run: git submodule update --init --recursive
       - name: Build binaries
         run: |
+          sudo apt-get update
           sudo apt-get install scons
           sudo apt-get install gcc-multilib
           sudo apt-get install g++-multilib
@@ -70,11 +71,12 @@ jobs:
 
           echo import key
           security import $DISTRIBUTION_KEY_PATH -P "$DISTRIBUTION_KEY_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
           security find-identity
 
           echo codesign
-          /usr/bin/codesign -f -s "$DISTRIBUTION_KEY_IDENTITY" ./Dev/Cpp/bin/libeffekseer.osx.dylib
+          /usr/bin/codesign -f -v -s "$DISTRIBUTION_KEY_IDENTITY" ./Dev/Cpp/bin/libeffekseer.osx.dylib
       - name: Upload binaries
         uses: actions/upload-artifact@v1
         with:
