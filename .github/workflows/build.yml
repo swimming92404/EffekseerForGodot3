@@ -52,24 +52,26 @@ jobs:
           python3 Dev/Cpp/build.py platform=osx
       - name: Codesign libraries
         env:
-          DISTRIBUTION_KEY_BASE64: ${{ secrets.DISTRIBUTION_KEY_BASE64 }}
-          DISTRIBUTION_KEY_PASS: ${{ secrets.DISTRIBUTION_KEY_PASS }}
-          DISTRIBUTION_KEY_NAME: ${{ secrets.DISTRIBUTION_KEY_NAME }}
-          KEYCHAIN_PASS: ${{ secrets.KEYCHAIN_PASS }}
+          DISTRIBUTION_KEY_BASE64: ${{ secrets.MACOS_DISTRIBUTION_KEY_BASE64 }}
+          DISTRIBUTION_KEY_PASSWORD: ${{ secrets.MACOS_DISTRIBUTION_KEY_PASSWORD }}
+          DISTRIBUTION_KEY_IDENTITY: ${{ secrets.MACOS_DISTRIBUTION_KEY_IDENTITY }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
         run: |
           DISTRIBUTION_KEY_PATH=$RUNNER_TEMP/distribution.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
           echo -n "$DISTRIBUTION_KEY_BASE64" | base64 --decode --output $DISTRIBUTION_KEY_PATH
 
-          security create-keychain -p "$KEYCHAIN_PASS" $KEYCHAIN_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASS" $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          security import $DISTRIBUTION_KEY_PATH -P "$DISTRIBUTION_KEY_PASS" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          security import $DISTRIBUTION_KEY_PATH -P "$DISTRIBUTION_KEY_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
           security list-keychain -d user -s $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
 
-          codesign -f -s '$DISTRIBUTION_KEY_NAME' bin_macos/libeffekseer.osx.dylib
+          codesign -f -s '$DISTRIBUTION_KEY_IDENTITY' bin_macos/libeffekseer.osx.dylib
       - name: Upload binaries
         uses: actions/upload-artifact@v1
         with:
