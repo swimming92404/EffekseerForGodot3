@@ -75,7 +75,7 @@ jobs:
           security find-identity
 
           echo codesign
-          /usr/bin/codesign -f -s "$DISTRIBUTION_KEY_IDENTITY" ./Dev/Cpp/bin/libeffekseer.osx.dylib
+          /usr/bin/codesign --force --verify --verbose --timestamp --sign "$DISTRIBUTION_KEY_IDENTITY" ./Dev/Cpp/bin/libeffekseer.osx.dylib
           /usr/bin/codesign -dvvv ./Dev/Cpp/bin/libeffekseer.osx.dylib
       - name: Upload binaries
         uses: actions/upload-artifact@v1
