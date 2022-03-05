@@ -72,7 +72,8 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
           security find-identity
 
-          codesign -f -s '$DISTRIBUTION_KEY_IDENTITY' bin_macos/libeffekseer.osx.dylib
+          echo codesign
+          /usr/bin/codesign -f -s '$DISTRIBUTION_KEY_IDENTITY' bin_macos/libeffekseer.osx.dylib
       - name: Upload binaries
         uses: actions/upload-artifact@v1
         with:
